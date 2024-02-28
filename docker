@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  # Nginx сервер
+  nginx:
+    build: ./nginx  # Путь к Dockerfile для сборки образа
+    ports:
+      - "80:80"     # Проброс портов: внешний порт -> внутренний порт
+      - "443:443"   # Проброс портов: внешний порт -> внутренний порт
+    depends_on:
+      - php-fpm     # Зависимость от сервиса php-fpm
+
+  # PHP-FPM
+  php-fpm:
+    build: ./php-fpm  # Путь к Dockerfile для сборки образа
+    volumes:
+      - ./php-myadmin:/var/www/html  # Примонтированный том
+    depends_on:
+      - mysql         # Зависимость от сервиса mysql
+
+  # Сервер баз данных MySQL
+  mysql:
+    build: ./mysql    # Путь к Dockerfile для сборки образа
+    volumes:
+      - ./mysql/db:/var/lib/mysql  # Примонтированный том
+    environment:
+      MYSQL_ROOT_PASSWORD: "P@55w.rd"  # Переменные среды
+    ports:
+      - "3306:3306"  # Проброс портов: внешний порт -> внутренний порт
+
+  # PhpMyAdmin
+  phpmyadmin:
+    build: ./php-myadmin  # Путь к Dockerfile для сборки образа
+    environment:
+      PMA_HOST: "mysql"     # Переменные среды
+      PMA_PORT: 3306        # Переменные среды
+      PMA_USER: "P@55w.rd"  # Переменные среды
+      PMA_PASSWORD: "P@55w.rd"  # Переменные среды
+      PMA_ARBITRARY: 1      # Переменные среды
+    ports:
+      - "8080:80"   # Проброс портов: внешний порт -> внутренний порт
+    depends_on:
+      - mysql       # Зависимость от сервиса mysql
